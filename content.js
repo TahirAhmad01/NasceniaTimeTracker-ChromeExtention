@@ -1,7 +1,33 @@
+let showAttendanceTime = true; // Default to true
+
+// Request the initial state from the background script
+chrome.runtime.sendMessage(
+  { type: "getShowAttendanceTime" },
+  function (response) {
+    if (response !== undefined && response.showAttendanceTime !== undefined) {
+      showAttendanceTime = response.showAttendanceTime;
+      // Update the toggle switch state accordingly
+      const toggleSwitch = document.getElementById("toggleAttendanceTime");
+      if (toggleSwitch) {
+        toggleSwitch.checked = showAttendanceTime;
+      }
+    }
+  }
+);
+
+// Listen for messages from the background script
+chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+  if (message.type === "updateShowAttendanceTime") {
+    showAttendanceTime = message.showAttendanceTime;
+    // Update the attendance time display accordingly
+    updateAttendanceTimePeriodically();
+  }
+});
+
 function calculateAttendanceTime(callback) {
   try {
     const alertInfo = document.querySelector(".alert.alert-info");
-    if (alertInfo) {
+    if (alertInfo && showAttendanceTime) {
       const timeString = alertInfo.querySelector("b").innerText.trim();
       const [hours, minutes, period] = timeString.split(/:| /);
       let hours24 = parseInt(hours, 10);
@@ -26,7 +52,7 @@ function calculateAttendanceTime(callback) {
 
       callback(null, formattedDifference);
     } else {
-      callback("Attendance time not found.", null);
+      callback("Attendance time not found or not enabled.", null);
     }
   } catch (error) {
     console.error("Error calculating attendance time:", error);
@@ -40,7 +66,7 @@ function updateAttendanceTimeOnPage(attendanceTime) {
     existingDiv.textContent = "Today you spent at nascenia: " + attendanceTime;
   } else {
     const alertInfo = document.querySelector(".alert.alert-info");
-    if (alertInfo) {
+    if (alertInfo && showAttendanceTime) {
       const div = document.createElement("div");
       div.className = "attendance-time-div";
       div.textContent = "Today you spent at nascenia: " + attendanceTime;
@@ -55,18 +81,33 @@ function updateAttendanceTimeOnPage(attendanceTime) {
   }
 }
 
-
 function updateAttendanceTimePeriodically() {
-  calculateAttendanceTime((error, result) => {
-    if (error) {
-      console.error(error);
-    } else {
-      console.log(result);
-      updateAttendanceTimeOnPage(result);
-    }
-  });
+  if (showAttendanceTime) {
+    calculateAttendanceTime((error, result) => {
+      if (error) {
+        console.error(error);
+      } else {
+        console.log(result);
+        updateAttendanceTimeOnPage(result);
+      }
+    });
+  }
 }
 
+// Check the status of the toggle switch periodically and send a message to the background script to update the state
+setInterval(() => {
+  const toggleSwitch = document.getElementById("toggleAttendanceTime");
+  if (toggleSwitch) {
+    showAttendanceTime = toggleSwitch.checked;
+    chrome.runtime.sendMessage({
+      type: "updateShowAttendanceTime",
+      showAttendanceTime,
+    });
+  }
+}, 1000);
+
+// Call the function initially
 updateAttendanceTimePeriodically();
 
-setInterval(updateAttendanceTimePeriodically, 60000); 
+// Set interval for updating attendance time periodically
+setInterval(updateAttendanceTimePeriodically, 60000);

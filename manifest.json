@@ -2,20 +2,29 @@
   "manifest_version": 3,
   "name": "Attendance Time Extension",
   "version": "1.0",
-  "description": "Calculate and display attendance time difference.",
+  "description": "Displays attendance time on a webpage.",
   "permissions": ["activeTab"],
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
-      "matches": ["http://timetracker.nascenia.com/"],
+      "matches": ["<all_urls>"],
       "js": ["content.js"]
     }
   ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "images/logo.png",
-      "48": "images/logo.png",
-      "128": "images/logo.png"
+      "16": "images/icon.png",
+      "48": "images/icon.png",
+      "128": "images/icon.png"
     }
-  }
+  },
+  "icons": {
+    "16": "images/icon.png",
+    "48": "images/icon.png",
+    "128": "images/icon.png"
+  },
+  "permissions": ["storage"]
 }
