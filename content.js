@@ -35,30 +35,38 @@ function calculateAttendanceTime(callback) {
 }
 
 function updateAttendanceTimeOnPage(attendanceTime) {
-  const div = document.createElement("div");
-  div.textContent = "Attendance Time Difference: " + attendanceTime;
-  div.style.padding = "10px";
-  div.style.backgroundColor = "#f0f0f0";
-  div.style.marginTop = "-10px";
-  div.style.marginBottom = "15px";
-  div.style.borderRadius = "5px";
-  div.style.border = "1px solid #ddd";
-
-  const alertInfo = document.querySelector(".alert.alert-info");
-  if (alertInfo) {
-   
-    const newDiv = document.createElement("div");
-    alertInfo.insertAdjacentElement("afterend", newDiv);
-    newDiv.insertAdjacentElement("afterend", div);
+  const existingDiv = document.querySelector(".attendance-time-div");
+  if (existingDiv) {
+    existingDiv.textContent = "Today you spent at nascenia: " + attendanceTime;
+  } else {
+    const alertInfo = document.querySelector(".alert.alert-info");
+    if (alertInfo) {
+      const div = document.createElement("div");
+      div.className = "attendance-time-div";
+      div.textContent = "Today you spent at nascenia: " + attendanceTime;
+      div.style.padding = "10px";
+      div.style.backgroundColor = "#f0f0f0";
+      div.style.marginTop = "-10px";
+      div.style.marginBottom = "15px";
+      div.style.borderRadius = "5px";
+      div.style.border = "1px solid #ddd";
+      alertInfo.insertAdjacentElement("afterend", div);
+    }
   }
 }
 
 
-calculateAttendanceTime((error, result) => {
-  if (error) {
-    console.error(error);
-  } else {
-    console.log(result);
-    updateAttendanceTimeOnPage(result);
-  }
-});
+function updateAttendanceTimePeriodically() {
+  calculateAttendanceTime((error, result) => {
+    if (error) {
+      console.error(error);
+    } else {
+      console.log(result);
+      updateAttendanceTimeOnPage(result);
+    }
+  });
+}
+
+updateAttendanceTimePeriodically();
+
+setInterval(updateAttendanceTimePeriodically, 60000); 
