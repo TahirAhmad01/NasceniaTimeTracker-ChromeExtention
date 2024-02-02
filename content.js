@@ -23,30 +23,42 @@ function calculateAttendanceTime(callback) {
       );
 
       const formattedDifference = `${differenceHours} hours ${differenceMinutes} minutes`;
-      console.log("Attendance Time Difference:", formattedDifference);
 
-      // Call the callback function with the result
       callback(null, formattedDifference);
     } else {
-      console.log("Alert info not found.");
-      // Call the callback function with an error message
       callback("Attendance time not found.", null);
     }
   } catch (error) {
     console.error("Error calculating attendance time:", error);
-    // Call the callback function with the error
     callback(error.message || "Error calculating attendance time.", null);
   }
 }
 
-// Call calculateAttendanceTime with a callback
+function updateAttendanceTimeOnPage(attendanceTime) {
+  const div = document.createElement("div");
+  div.textContent = "Attendance Time Difference: " + attendanceTime;
+  div.style.padding = "10px";
+  div.style.backgroundColor = "#f0f0f0";
+  div.style.marginTop = "-10px";
+  div.style.marginBottom = "15px";
+  div.style.borderRadius = "5px";
+  div.style.border = "1px solid #ddd";
+
+  const alertInfo = document.querySelector(".alert.alert-info");
+  if (alertInfo) {
+   
+    const newDiv = document.createElement("div");
+    alertInfo.insertAdjacentElement("afterend", newDiv);
+    newDiv.insertAdjacentElement("afterend", div);
+  }
+}
+
+
 calculateAttendanceTime((error, result) => {
   if (error) {
     console.error(error);
-    // Handle error
   } else {
     console.log(result);
-    // Send message to the background script
-    chrome.runtime.sendMessage({ action: "calculateAttendanceTime", result: result });
+    updateAttendanceTimeOnPage(result);
   }
 });
