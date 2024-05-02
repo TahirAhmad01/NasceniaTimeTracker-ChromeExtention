@@ -2,7 +2,6 @@ let showAttendanceTime = true;
 
 function calculateAttendanceTime(callback) {
   try {
-  
     var ulList = document.querySelectorAll("ul")[0];
     var liList = ulList.querySelectorAll("li")[8];
     var selectName = liList.querySelectorAll("a")[0].innerText.trim();
@@ -17,12 +16,12 @@ function calculateAttendanceTime(callback) {
         if (cell.innerText.trim().includes(selectName)) {
           selectedRowIndex = index;
           // console.log("Index of selected row:", selectedRowIndex);
-          return; 
+          return;
         }
       });
     });
 
-    if (selectedRowIndex !== null) {
+    if (selectedRowIndex !== null && selectName !== null) {
       const selectRow = selectTable.querySelectorAll("tr")[selectedRowIndex];
       const selectTime = selectRow.querySelectorAll("td")[2].innerText.trim();
       const selectEndTime = selectRow
@@ -85,6 +84,8 @@ function calculateAttendanceTime(callback) {
         // console.log(formattedDifference);
         callback(null, formattedDifference);
       }
+    } else {
+      callback("Attendance time not found.", null);
     }
   } catch (error) {
     console.error("Error calculating attendance time:", error);
@@ -117,7 +118,8 @@ function updateAttendanceTimePeriodically() {
   if (showAttendanceTime) {
     calculateAttendanceTime((error, result) => {
       if (error) {
-        console.error(error);
+        // console.error(error);
+        updateAttendanceTimeOnPage(error);
       } else {
         // console.log(result);
         updateAttendanceTimeOnPage(result);
@@ -126,6 +128,5 @@ function updateAttendanceTimePeriodically() {
   }
 }
 
-
 updateAttendanceTimePeriodically();
-setInterval(updateAttendanceTimePeriodically, 60000);
+setInterval(updateAttendanceTimePeriodically, 2000);
