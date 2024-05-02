@@ -1,74 +1,23 @@
-let showAttendanceTime = true; // Default to true
-
-// Request the initial state from the background script
-chrome.runtime.sendMessage(
-  { type: "getShowAttendanceTime" },
-  function (response) {
-    if (response !== undefined && response.showAttendanceTime !== undefined) {
-      showAttendanceTime = response.showAttendanceTime;
-      // Update the toggle switch state accordingly
-      const toggleSwitch = document.getElementById("toggleAttendanceTime");
-      if (toggleSwitch) {
-        toggleSwitch.checked = showAttendanceTime;
-      }
-    }
-  }
-);
-
-// Listen for messages from the background script
-chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
-  if (message.type === "updateShowAttendanceTime") {
-    showAttendanceTime = message.showAttendanceTime;
-    updateAttendanceTimePeriodically();
-  }
-});
+let showAttendanceTime = true;
 
 function calculateAttendanceTime(callback) {
   try {
-    // const alertInfo = document.querySelector(".alert.alert-info");
-    // if (alertInfo && showAttendanceTime) {
-    //   const timeString = alertInfo.querySelector("b").innerText.trim();
-    //   const [hours, minutes, period] = timeString.split(/:| /);
-    //   let hours24 = parseInt(hours, 10);
-    //   if (period === "PM") {
-    //     hours24 += 12;
-    //   }
-    //   const minutes24 = parseInt(minutes, 10);
-    //   const attendanceTime = new Date();
-    //   attendanceTime.setHours(hours24, minutes24, 0, 0);
-
-    //   const currentTime = new Date();
-    //   const differenceMilliseconds = currentTime - attendanceTime;
-
-    //   const differenceHours = Math.floor(
-    //     differenceMilliseconds / (1000 * 60 * 60)
-    //   );
-    //   const differenceMinutes = Math.floor(
-    //     (differenceMilliseconds % (1000 * 60 * 60)) / (1000 * 60)
-    //   );
-
-    //   const formattedDifference = `${differenceHours} hours ${differenceMinutes} minutes`;
-
-    //   callback(null, formattedDifference);
-    // } else {
-    //   callback("Attendance time not found or not enabled.", null);
-    // }
-
+  
     var ulList = document.querySelectorAll("ul")[0];
     var liList = ulList.querySelectorAll("li")[8];
     var selectName = liList.querySelectorAll("a")[0].innerText.trim();
 
     var selectTable = document.querySelectorAll("table")[0];
     var selectedRowIndex = null;
-    console.log(selectName);
+    // console.log(selectName);
 
     selectTable.querySelectorAll("tr").forEach(function (row, index) {
       row.querySelectorAll("td").forEach(function (cell) {
-        console.log(cell.innerText.trim().includes(selectName));
+        // console.log(cell.innerText.trim().includes(selectName));
         if (cell.innerText.trim().includes(selectName)) {
           selectedRowIndex = index;
-          console.log("Index of selected row:", selectedRowIndex);
-          return; // exit the forEach loop once found
+          // console.log("Index of selected row:", selectedRowIndex);
+          return; 
         }
       });
     });
@@ -79,7 +28,7 @@ function calculateAttendanceTime(callback) {
       const selectEndTime = selectRow
         .querySelectorAll("td")[3]
         .innerText.trim();
-      console.log("Time:", selectTime);
+      // console.log("Time:", selectTime);
 
       if (selectEndTime && selectEndTime.length > 3) {
         const [hours, minutes, period] = selectTime.split(/:| /);
@@ -110,7 +59,7 @@ function calculateAttendanceTime(callback) {
         );
 
         const formattedDifference = `${differenceHours} hours ${differenceMinutes} minutes`;
-        console.log(formattedDifference);
+        // console.log(formattedDifference);
         callback(null, formattedDifference);
       } else {
         const [hours, minutes, period] = selectTime.split(/:| /);
@@ -133,7 +82,7 @@ function calculateAttendanceTime(callback) {
         );
 
         const formattedDifference = `${differenceHours} hours ${differenceMinutes} minutes`;
-        console.log(formattedDifference);
+        // console.log(formattedDifference);
         callback(null, formattedDifference);
       }
     }
@@ -170,27 +119,13 @@ function updateAttendanceTimePeriodically() {
       if (error) {
         console.error(error);
       } else {
-        console.log(result);
+        // console.log(result);
         updateAttendanceTimeOnPage(result);
       }
     });
   }
 }
 
-// Check the status of the toggle switch periodically and send a message to the background script to update the state
-setInterval(() => {
-  const toggleSwitch = document.getElementById("toggleAttendanceTime");
-  if (toggleSwitch) {
-    showAttendanceTime = toggleSwitch.checked;
-    chrome.runtime.sendMessage({
-      type: "updateShowAttendanceTime",
-      showAttendanceTime,
-    });
-  }
-}, 1000);
 
-// Call the function initially
 updateAttendanceTimePeriodically();
-
-// Set interval for updating attendance time periodically
 setInterval(updateAttendanceTimePeriodically, 60000);
